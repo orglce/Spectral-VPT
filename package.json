@@ -5,7 +5,8 @@
   "main": "bin/server-express",
   "scripts": {
     "build": "bin/packer",
-    "start": "bin/server-express",
+    "start": "node bin/server-node",
+    "watch": "node bin/watcher bin/packer src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,10 +17,14 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/terier/vpt#readme",
   "dependencies": {
-    "express": "latest"
+    "express": "latest",
+    "get-file-object-from-local-path": "^1.0.2"
   },
   "engines": {
     "node": "12.x"
   },
-  "heroku-run-build-script": true
+  "heroku-run-build-script": true,
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
 }

@@ -5,3 +5,4 @@ settings
 *.bvp
 data/*
 .vscode
+webgl2-examples/

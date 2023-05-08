@@ -21,7 +21,10 @@ constructor() {
     this._demos = [];
 
     this._addEventListeners();
-    this._loadDemoJson();
+    setTimeout(() => {
+        this._handleLoadFile();
+    }, "200");
+    // this._loadDemoJson();
 }
 
 _addEventListeners() {
@@ -67,24 +70,27 @@ _handleLoadClick() {
 
 _handleLoadFile() {
     const files = this.binds.file.files;
-    if (files.length === 0) {
-        // update status bar?
-        return;
-    }
 
-    const file = files[0];
-    const filetype = this._getVolumeTypeFromURL(file.name);
-    const dimensions = this.binds.dimensions.value;
-    const precisionChecked = this.binds.precision.querySelector('input:checked');
-    const precision = parseInt(precisionChecked.value, 10);
+    var file = new File([new Blob([new Uint8Array([0xaa, 0xFF, 0xaa,  0xFF, 0xFF, 0xFF, 0x00, 0xFF])])], "test.bin");
+    // if (files.length === 0) {
+    //     // update status bar?
+    //     return;
+    // }
+    //
+    // const file = files[0];
+    // const filetype = this._getVolumeTypeFromURL(file.name);
+    // const dimensions = this.binds.dimensions.value;
+    // const precisionChecked = this.binds.precision.querySelector('input:checked');
+    // const precision = parseInt(precisionChecked.value, 10);
+
 
     this.dispatchEvent(new CustomEvent('load', {
         detail: {
             type       : 'file',
             file       : file,
-            filetype   : filetype,
-            dimensions : dimensions,
-            precision  : precision,
+            filetype   : 'raw',
+            dimensions : [2, 2, 2],
+            precision  : 8,
         }
     }));
 }
