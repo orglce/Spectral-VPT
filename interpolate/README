@@ -1,0 +1,9 @@
+Program poženemo z 
+
+./interpolate --input <input_file> --output <output_file> --method [basic|modified]
+
+Izhod programa so binarna datoteka točk s koordinatami, binarna datoteka .vst za vizualizacijo v vst programu in dve sliki prereza za hitro debugiranje.
+
+Ostali argumenti kot so opisani v zahtevku domače naloge niso nujni, v programu so za njih nastavljene privzete vrednosti.
+
+Program je napisan v jeziku Rust. Prilagam še celoten Rust projekt in kodo.

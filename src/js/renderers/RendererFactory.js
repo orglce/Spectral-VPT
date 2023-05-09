@@ -6,6 +6,7 @@ import { MCSRenderer } from './MCSRenderer.js';
 import { MCMRenderer } from './MCMRenderer.js';
 import { DOSRenderer } from './DOSRenderer.js';
 import { DepthRenderer } from './DepthRenderer.js';
+import { TesterRenderer} from "./TesterRenderer.js";
 import { SpectralRenderer} from "./SpectralRenderer.js";
 
 export function RendererFactory(which) {
@@ -18,7 +19,8 @@ export function RendererFactory(which) {
         case 'mcm': return MCMRenderer;
         case 'dos': return DOSRenderer;
         case 'depth': return DepthRenderer;
-        case 'spectral': return SpectralRenderer
+        case 'spectral': return SpectralRenderer;
+        case 'tester': return TesterRenderer;
 
         default: throw new Error('No suitable class');
     }

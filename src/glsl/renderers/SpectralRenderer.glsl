@@ -1,11 +1,13 @@
 // #part /glsl/shaders/renderers/Spectral/generate/vertex
 
 #version 300 es
+precision mediump float;
 
 uniform mat4 uMvpInverseMatrix;
 
 out vec3 vRayFrom;
 out vec3 vRayTo;
+out vec2 vPosition;
 
 // #link /glsl/mixins/unproject
 @unproject
@@ -19,6 +21,7 @@ const vec2 vertices[] = vec2[](
 void main() {
     vec2 position = vertices[gl_VertexID];
     unproject(position, uMvpInverseMatrix, vRayFrom, vRayTo);
+    vPosition = position * 0.5 + 0.5;
     gl_Position = vec4(position, 0, 1);
 }
 
@@ -29,17 +32,34 @@ precision mediump float;
 precision mediump sampler2D;
 precision mediump sampler3D;
 
+#define M_INVPI 0.31830988618
+
 uniform sampler3D uVolume;
 uniform sampler2D uTransferFunction;
-uniform float uColorFrag;
+uniform sampler2D uEnvironment;
+uniform float uRandSeed;
+uniform float uExtinction;
+uniform vec3 uScatteringDirection;
 
 in vec3 vRayFrom;
 in vec3 vRayTo;
+in vec2 vPosition;
 
-out float oColor;
+out vec4 oColor;
 
 // #link /glsl/mixins/intersectCube
 @intersectCube
+
+@constants
+@random/hash/pcg
+@random/hash/squashlinear
+@random/distribution/uniformdivision
+@random/distribution/exponential
+
+vec4 sampleEnvironmentMap(vec3 d) {
+    vec2 texCoord = vec2(atan(d.x, -d.z), asin(-d.y) * 2.0) * INVPI * 0.5 + 0.5;
+    return texture(uEnvironment, texCoord);
+}
 
 vec4 sampleVolumeColor(vec3 position) {
     vec2 volumeSample = texture(uVolume, position).rg;
@@ -47,32 +67,79 @@ vec4 sampleVolumeColor(vec3 position) {
     return transferSample;
 }
 
+float sampleDistance(inout uint state, vec3 from, vec3 to) {
+    float maxDistance = distance(from, to);
+    float dist = 0.0;
+
+    do {
+        dist += random_exponential(state, uExtinction);
+        if (dist > maxDistance) {
+            break;
+        }
+        vec3 samplingPosition = mix(from, to, dist / maxDistance);
+        vec4 transferSample = sampleVolumeColor(samplingPosition);
+        if (random_uniform(state) < transferSample.a) {
+            break;
+        }
+    } while (true);
+
+    return dist;
+}
+
+float sampleTransmittance(inout uint state, vec3 from, vec3 to) {
+    float maxDistance = distance(from, to);
+    float dist = 0.0;
+    float transmittance = 1.0;
+
+    do {
+        dist += random_exponential(state, uExtinction);
+        if (dist > maxDistance) {
+            break;
+        }
+        vec3 samplingPosition = mix(from, to, dist / maxDistance);
+        vec4 transferSample = sampleVolumeColor(samplingPosition);
+        transmittance *= 1.0 - transferSample.a;
+    } while (true);
+
+    return transmittance;
+}
+
 void main() {
     vec3 rayDirection = vRayTo - vRayFrom;
+    vec3 rayDirectionUnit = normalize(rayDirection);
     vec2 tbounds = max(intersectCube(vRayFrom, rayDirection), 0.0);
-    if (tbounds.x >= tbounds.y) {
-        oColor = 0.0;
-    } else {
-        vec3 from = mix(vRayFrom, vRayTo, tbounds.x);
-        vec3 to = mix(vRayFrom, vRayTo, tbounds.y);
 
-        float t = 0.0;
-        float val = 0.0;
-        float offset = 0.1;
-        vec3 pos;
-        do {
-            pos = mix(from, to, offset);
-            val = sampleVolumeColor(pos).a;
-            t += 0.02;
-            offset = mod(offset + 0.02, 1.0);
-        } while (t < 1.0);
-        oColor = val;
+    if (tbounds.x >= tbounds.y) {
+        oColor = sampleEnvironmentMap(rayDirectionUnit);
+        return;
     }
+
+    vec3 from = mix(vRayFrom, vRayTo, tbounds.x);
+    vec3 to = mix(vRayFrom, vRayTo, tbounds.y);
+    float maxDistance = distance(from, to);
+
+    uint state = hash(uvec3(floatBitsToUint(vPosition.x), floatBitsToUint(vPosition.y), floatBitsToUint(uRandSeed)));
+    float dist = sampleDistance(state, from, to);
+
+    if (dist > maxDistance) {
+        oColor = sampleEnvironmentMap(rayDirectionUnit);
+        return;
+    }
+
+    from = mix(from, to, dist / maxDistance);
+    tbounds = max(intersectCube(from, uScatteringDirection), 0.0);
+    to = from + uScatteringDirection * tbounds.y;
+    vec4 diffuseColor = sampleVolumeColor(from);
+    vec4 lightColor = sampleEnvironmentMap(uScatteringDirection);
+    float transmittance = sampleTransmittance(state, from, to);
+
+    oColor = diffuseColor * lightColor * transmittance;
 }
 
 // #part /glsl/shaders/renderers/Spectral/integrate/vertex
 
 #version 300 es
+precision mediump float;
 
 const vec2 vertices[] = vec2[](
     vec2(-1, -1),
@@ -93,23 +160,26 @@ void main() {
 #version 300 es
 precision mediump float;
 precision mediump sampler2D;
+precision mediump sampler3D;
 
 uniform sampler2D uAccumulator;
 uniform sampler2D uFrame;
+uniform float uInvFrameNumber;
 
 in vec2 vPosition;
 
-out float oColor;
+out vec4 oColor;
 
 void main() {
-    float acc = texture(uAccumulator, vPosition).r;
-    float frame = texture(uFrame, vPosition).r;
-    oColor = frame;
+    vec4 acc = texture(uAccumulator, vPosition);
+    vec4 frame = texture(uFrame, vPosition);
+    oColor = acc + (frame - acc) * uInvFrameNumber;
 }
 
 // #part /glsl/shaders/renderers/Spectral/render/vertex
 
 #version 300 es
+precision mediump float;
 
 const vec2 vertices[] = vec2[](
     vec2(-1, -1),
@@ -138,13 +208,14 @@ in vec2 vPosition;
 out vec4 oColor;
 
 void main() {
-    float acc = texture(uAccumulator, vPosition).r;
-    oColor = vec4(acc, acc, acc, 1);
+    vec4 acc = texture(uAccumulator, vPosition);
+    oColor = acc;
 }
 
 // #part /glsl/shaders/renderers/Spectral/reset/vertex
 
 #version 300 es
+precision mediump float;
 
 const vec2 vertices[] = vec2[](
     vec2(-1, -1),
@@ -162,8 +233,8 @@ void main() {
 #version 300 es
 precision mediump float;
 
-out float oColor;
+out vec4 oColor;
 
 void main() {
-    oColor = 0.0;
+    oColor = vec4(0, 0, 0, 1);
 }

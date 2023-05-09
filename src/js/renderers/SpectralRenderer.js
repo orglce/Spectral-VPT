@@ -17,12 +17,11 @@ constructor(gl, volume, camera, environmentTexture, options = {}) {
 
     this.registerProperties([
         {
-            name: 'color',
-            label: 'Color',
+            name: 'extinction',
+            label: 'Extinction',
             type: 'spinner',
-            value: 50,
-            min: 1,
-            max: 100
+            value: 1,
+            min: 0,
         },
         {
             name: 'transferFunction',
@@ -40,13 +39,16 @@ constructor(gl, volume, camera, environmentTexture, options = {}) {
         }
 
         if ([
-            'transferFunction', 'color'
+            'extinction',
+            'transferFunction',
         ].includes(name)) {
             this.reset();
         }
     });
 
-    this._programs = WebGL.buildPrograms(this._gl, SHADERS.renderers.Spectral, MIXINS);
+    this._programs = WebGL.buildPrograms(gl, SHADERS.renderers.Spectral, MIXINS);
+
+    this._frameNumber = 1;
 }
 
 destroy() {
@@ -65,6 +67,8 @@ _resetFrame() {
     gl.useProgram(program);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    this._frameNumber = 1;
 }
 
 _generateFrame() {
@@ -75,13 +79,16 @@ _generateFrame() {
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());
-    gl.uniform1i(uniforms.uVolume, 0);
-
     gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this._environmentTexture);
+    gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-    gl.uniform1i(uniforms.uTransferFunction, 1);
 
-    gl.uniform1f(uniforms.uColorFrag, this.color/100);
+    gl.uniform1i(uniforms.uVolume, 0);
+    gl.uniform1i(uniforms.uEnvironment, 1);
+    gl.uniform1i(uniforms.uTransferFunction, 2);
+    gl.uniform1f(uniforms.uRandSeed, Math.random());
+    gl.uniform1f(uniforms.uExtinction, this.extinction);
 
     // TODO: get model matrix from volume
     const modelMatrix = mat4.fromTranslation(mat4.create(), [-0.5, -0.5, -0.5]);
@@ -94,6 +101,19 @@ _generateFrame() {
     mat4.multiply(matrix, projectionMatrix, matrix);
     mat4.invert(matrix, matrix);
     gl.uniformMatrix4fv(uniforms.uMvpInverseMatrix, false, matrix);
+
+    // scattering direction
+    let x, y, z, length;
+    do {
+        x = Math.random() * 2 - 1;
+        y = Math.random() * 2 - 1;
+        z = Math.random() * 2 - 1;
+        length = Math.sqrt(x * x + y * y + z * z);
+    } while (length > 1);
+    x /= length;
+    y /= length;
+    z /= length;
+    gl.uniform3f(uniforms.uScatteringDirection, x, y, z);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
@@ -111,8 +131,11 @@ _integrateFrame() {
 
     gl.uniform1i(uniforms.uAccumulator, 0);
     gl.uniform1i(uniforms.uFrame, 1);
+    gl.uniform1f(uniforms.uInvFrameNumber, 1 / this._frameNumber);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    this._frameNumber += 1;
 }
 
 _renderFrame() {
@@ -136,9 +159,9 @@ _getFrameBufferSpec() {
         height  : this._resolution,
         min     : gl.NEAREST,
         mag     : gl.NEAREST,
-        format  : gl.RED,
-        iformat : gl.R8,
-        type    : gl.UNSIGNED_BYTE,
+        format  : gl.RGBA,
+        iformat : gl.RGBA32F,
+        type    : gl.FLOAT,
     }];
 }
 
@@ -149,9 +172,9 @@ _getAccumulationBufferSpec() {
         height  : this._resolution,
         min     : gl.NEAREST,
         mag     : gl.NEAREST,
-        format  : gl.RED,
-        iformat : gl.R8,
-        type    : gl.UNSIGNED_BYTE,
+        format  : gl.RGBA,
+        iformat : gl.RGBA32F,
+        type    : gl.FLOAT,
     }];
 }
 
