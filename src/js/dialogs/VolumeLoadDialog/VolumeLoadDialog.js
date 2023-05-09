@@ -71,7 +71,8 @@ _handleLoadClick() {
 _handleLoadFile() {
     const files = this.binds.file.files;
 
-    var file = new File([new Blob([new Uint8Array([0xaa, 0xFF, 0xaa,  0xFF, 0xFF, 0xFF, 0x00, 0xFF])])], "test.bin");
+    var file = new File([new Blob([new Uint8Array([0xaa, 0xFF, 0xaa,  0xFF, 0xFF, 0xFF, 0x44, 0x77])])], "test.bin");
+    // var file = new File([new Blob([new Uint8Array([0x55])])], "test.bin");
     // if (files.length === 0) {
     //     // update status bar?
     //     return;
@@ -82,7 +83,6 @@ _handleLoadFile() {
     // const dimensions = this.binds.dimensions.value;
     // const precisionChecked = this.binds.precision.querySelector('input:checked');
     // const precision = parseInt(precisionChecked.value, 10);
-
 
     this.dispatchEvent(new CustomEvent('load', {
         detail: {
