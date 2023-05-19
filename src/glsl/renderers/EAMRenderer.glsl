@@ -46,7 +46,21 @@ out vec4 oColor;
 vec4 sampleVolumeColor(vec3 position) {
     vec2 volumeSample = texture(uVolume, position).rg;
     vec4 transferSample = texture(uTransferFunction, volumeSample);
-    return transferSample;
+
+    float i = 0.0;
+    float step = 1.0 / 10.0;
+    vec4 max_color = vec4(0);
+    float max_alpha = 0.0;
+
+    while (i <= 1.0) {
+        vec4 curr_color = texture(uTransferFunction, vec2(volumeSample.r, i));
+        if (curr_color.a > max_alpha) {
+            max_alpha = curr_color.a;
+            max_color = curr_color;
+        }
+        i += step;
+    }
+    return max_color;
 }
 
 void main() {

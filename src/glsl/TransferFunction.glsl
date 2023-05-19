@@ -46,6 +46,47 @@ void main() {
 //        oColor = vec4(0, 0, 0, 0);
 //    else
 //        oColor = vec4(HSVtoRGB(vec3((vPosition.x-cutoff) * (1.0 + cutoff), 1, 1)), 1);
+
+//    void main() {
+        //    float r = length((uPosition - vPosition) / uSize);
+        //    float cutoff = uPosition.x;
+        //    if (vPosition.x < cutoff)
+        //        oColor = vec4(0, 0, 0, 0);
+        //    else
+        //        oColor = vec4(HSVtoRGB(vec3((vPosition.x-cutoff) * (1.0 + cutoff), 1, 1)), 1);
+        //
+        //    if (vPosition.x > uPosition.x - uSize.x && vPosition.x < uPosition.x + uSize.x) {
+        //        vec4 spectrum = vec4(HSVtoRGB(vec3(vPosition.y, 1, 1)), 1);
+        //        float r = length((uPosition.x - vPosition.x));
+        //        spectrum = spectrum * (1.0 - r / uSize.x);
+        //        oColor = spectrum;
+        //    }
+        //    else {
+        //        oColor = vec4(0, 0, 0, 0);
+        //
+        //    }
+//        vec4 spectrum = vec4(HSVtoRGB(vec3(vPosition.y, 1, 1)), 1);
+//        float r = length((uPosition - vPosition) / uSize);
+//        //    if (vPosition.x > 0.5 && vPosition.y > 0.5) {
+//        //        oColor = vec4(HSVtoRGB(vec3(vPosition.x, 1, 1)), 1);
+//        //    } else {
+//        oColor = uColor * exp(-r * r);
+
+        //    }
+//    }
+
     float r = length((uPosition - vPosition) / uSize);
-    oColor = uColor * exp(-r * r);
+    oColor = vec4(HSVtoRGB(vec3(vPosition.y, 1, 1)), 1) * exp(-r * r);
+
+//    if (vPosition.y > 0.95) {
+//        oColor = vec4(0, 1.0, 0, 1);
+//    } else {
+//        oColor = uColor * exp(-r * r);
+//    }
+//    else {
+//    if (vPosition.y > 0.85) {
+//        oColor = uColor;
+//    } else {
+//        oColor = vec4(0, 0, 0, 0);
+//    }
 }

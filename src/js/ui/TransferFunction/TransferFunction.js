@@ -83,6 +83,10 @@ constructor() {
     this.binds.save.addEventListener('click', e => {
         CommonUtils.downloadJSON(this.bumps, 'TransferFunction.json');
     });
+
+    this.canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+    });
 }
 
 destroy() {
@@ -110,7 +114,6 @@ resizeTransferFunction(width, height) {
 render() {
     const gl = this._gl;
     const { uniforms } = this._program;
-    console.log(uniforms);
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     for (const bump of this.bumps) {
@@ -199,6 +202,7 @@ _addHandle(index) {
         this.selectBump(i);
     });
     handle.addEventListener('wheel', e => {
+        e.preventDefault();
         const amount = e.deltaY * this.scaleSpeed;
         const scale = Math.exp(-amount);
         const i = parseInt(e.currentTarget.dataset.index);
