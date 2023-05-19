@@ -54,7 +54,7 @@ void main() {
     vec3 rayDirection = vRayTo - vRayFrom;
     vec2 tbounds = max(intersectCube(vRayFrom, rayDirection), 0.0);
     if (tbounds.x >= tbounds.y) {
-        oDepth = -1.0;
+        oDepth = 1.0;
     } else {
         vec3 from = mix(vRayFrom, vRayTo, tbounds.x);
         vec3 to = mix(vRayFrom, vRayTo, tbounds.y);

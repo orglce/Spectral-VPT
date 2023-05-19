@@ -21,9 +21,9 @@ export class VolumeLoadDialog extends EventTarget {
         this._demos = [];
 
         this._addEventListeners();
-        setTimeout(() => {
-            this._loadFileAutomatically();
-        }, "200");
+        // setTimeout(() => {
+        //     this._loadFileAutomatically();
+        // }, "200");
         // this._loadDemoJson();
     }
 
@@ -69,15 +69,18 @@ export class VolumeLoadDialog extends EventTarget {
     }
 
     _loadFileAutomatically() {
-        // var file = new File([new Blob([new Uint8Array([0xaa, 0xFF, 0xaa,  0xFF, 0xFF, 0xFF, 0x44, 0x77])])], "test.bin");
-        var file = new File([new Blob([new Uint8Array([0xFF])])], "test.bin");
+        var file = new File([new Blob([new Uint8Array([0xaa, 0xFF, 0xaa,  0xFF, 0xFF, 0xFF, 0x44, 0x77])])], "test.bin");
+        var file = new File([new Blob([new Uint8Array([0xFF, 0x00, 0x00,  0x00, 0xFF, 0x00, 0x00, 0x00])])], "test.bin");
+        // var file = new File([new Blob([new Uint8Array([0xFF, 0xff, 0xff, 0xff])])], "test.bin");
+        // var file = new File([new Blob([new Uint8Array([0xFF, 0x00, 0xFF, 0x00])])], "test.bin");
+
 
         this.dispatchEvent(new CustomEvent('load', {
             detail: {
                 type       : 'file',
                 file       : file,
                 filetype   : 'raw',
-                dimensions : [1, 1, 1],
+                dimensions : [2, 2, 2],
                 precision  : 8,
             }
         }));

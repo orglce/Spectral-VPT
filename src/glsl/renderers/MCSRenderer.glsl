@@ -121,6 +121,7 @@ void main() {
     uint state = hash(uvec3(floatBitsToUint(vPosition.x), floatBitsToUint(vPosition.y), floatBitsToUint(uRandSeed)));
     float dist = sampleDistance(state, from, to);
 
+
     if (dist > maxDistance) {
         oColor = sampleEnvironmentMap(rayDirectionUnit);
         return;

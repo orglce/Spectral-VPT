@@ -113,6 +113,20 @@ float mean3(vec3 v) {
     return dot(v, vec3(1.0 / 3.0));
 }
 
+vec3 gradient(vec3 pos, float h) {
+    vec3 positive = vec3(
+    sampleVolumeColor(pos + vec3(h, 0, 0)).a,
+    sampleVolumeColor(pos + vec3(0, h, 0)).a,
+    sampleVolumeColor(pos + vec3(0, 0, h)).a
+    );
+    vec3 negative = vec3(
+    sampleVolumeColor(pos - vec3(h, 0, 0)).a,
+    sampleVolumeColor(pos - vec3(0, h, 0)).a,
+    sampleVolumeColor(pos - vec3(0, 0, h)).a
+    );
+    return (positive - negative) / (2.0 * h);
+}
+
 void main() {
     Photon photon;
     vec2 mappedPosition = vPosition * 0.5 + 0.5;

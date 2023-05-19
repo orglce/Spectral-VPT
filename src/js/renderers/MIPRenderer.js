@@ -39,7 +39,7 @@ constructor(gl, volume, camera, environmentTexture, options = {}) {
         }
 
         if ([
-            'transferFunction',
+            'transferFunction', 'steps',
         ].includes(name)) {
             this.reset();
         }

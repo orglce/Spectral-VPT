@@ -110,6 +110,7 @@ resizeTransferFunction(width, height) {
 render() {
     const gl = this._gl;
     const { uniforms } = this._program;
+    console.log(uniforms);
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     for (const bump of this.bumps) {

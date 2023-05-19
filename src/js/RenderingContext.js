@@ -132,6 +132,7 @@ async setVolume(reader) {
 }
 
 setEnvironmentMap(image) {
+    console.log("DREks")
     WebGL.createTexture(this.gl, {
         texture : this.environmentTexture,
         image   : image

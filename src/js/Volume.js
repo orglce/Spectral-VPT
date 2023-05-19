@@ -65,6 +65,7 @@ async readModality(modalityName) {
         const block = this.metadata.blocks[index];
         const { width, height, depth } = block.dimensions;
         const { x, y, z } = position;
+        console.log(this._typize(data, type))
         gl.bindTexture(gl.TEXTURE_3D, this.texture);
         gl.texSubImage3D(gl.TEXTURE_3D, 0,
             x, y, z, width, height, depth,
@@ -118,7 +119,7 @@ setFilter(filter) {
     }
 
     const gl = this._gl;
-    filter = filter === 'linear' ? gl.NEAREST : gl.NEAREST;
+    filter = filter === 'linear' ? gl.LINEAR : gl.NEAREST;
     gl.bindTexture(gl.TEXTURE_3D, this.texture);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
     gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter);

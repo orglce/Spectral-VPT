@@ -13,6 +13,7 @@ async readLength() {
 }
 
 async readData(start, end) {
+    console.log(await this.blob.slice(start, end).arrayBuffer());
     return await this.blob.slice(start, end).arrayBuffer();
 }
 

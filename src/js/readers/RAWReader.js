@@ -66,6 +66,7 @@ async readBlock(block) {
     const sliceBytes = this.width * this.height;
     const start = block * sliceBytes;
     const end = (block + 1) * sliceBytes;
+    console.log(start, end)
     return await this._loader.readData(start, end);
 }
 
