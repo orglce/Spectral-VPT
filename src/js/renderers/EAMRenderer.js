@@ -143,10 +143,18 @@ _renderFrame() {
     const { program, uniforms } = this._programs.render;
     gl.useProgram(program);
 
-    gl.activeTexture(gl.TEXTURE0);
+    gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[0]);
 
-    gl.uniform1i(uniforms.uAccumulator, 0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
+
+    gl.uniform1i(uniforms.uVolume, 0);
+    gl.uniform1i(uniforms.uTransferFunction, 1);
+
+    gl.uniform1i(uniforms.uAccumulator, 2);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
