@@ -20,7 +20,7 @@ constructor(gl, volume, camera, environmentTexture, options = {}) {
             name: 'extinction',
             label: 'Extinction',
             type: 'spinner',
-            value: 1,
+            value: 15,
             min: 0,
         },
         {
@@ -109,6 +109,7 @@ _resetFrame() {
         gl.COLOR_ATTACHMENT1,
         gl.COLOR_ATTACHMENT2,
         gl.COLOR_ATTACHMENT3,
+        gl.COLOR_ATTACHMENT4,
     ]);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -140,16 +141,20 @@ _integrateFrame() {
     gl.uniform1i(uniforms.uRadiance, 3);
 
     gl.activeTexture(gl.TEXTURE4);
-    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());
-    gl.uniform1i(uniforms.uVolume, 4);
+    gl.bindTexture(gl.TEXTURE_2D, this._accumulationBuffer.getAttachments().color[4]);
+    gl.uniform1i(uniforms.uWavelength, 4);
 
     gl.activeTexture(gl.TEXTURE5);
-    gl.bindTexture(gl.TEXTURE_2D, this._environmentTexture);
-    gl.uniform1i(uniforms.uEnvironment, 5);
+    gl.bindTexture(gl.TEXTURE_3D, this._volume.getTexture());
+    gl.uniform1i(uniforms.uVolume, 5);
 
     gl.activeTexture(gl.TEXTURE6);
+    gl.bindTexture(gl.TEXTURE_2D, this._environmentTexture);
+    gl.uniform1i(uniforms.uEnvironment, 6);
+
+    gl.activeTexture(gl.TEXTURE7);
     gl.bindTexture(gl.TEXTURE_2D, this._transferFunction);
-    gl.uniform1i(uniforms.uTransferFunction, 6);
+    gl.uniform1i(uniforms.uTransferFunction, 7);
 
     gl.uniform2f(uniforms.uInverseResolution, 1 / this._resolution, 1 / this._resolution);
     gl.uniform1f(uniforms.uRandSeed, Math.random());
@@ -177,6 +182,7 @@ _integrateFrame() {
         gl.COLOR_ATTACHMENT1,
         gl.COLOR_ATTACHMENT2,
         gl.COLOR_ATTACHMENT3,
+        gl.COLOR_ATTACHMENT4,
     ]);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -252,11 +258,22 @@ _getAccumulationBufferSpec() {
         type    : gl.FLOAT,
     };
 
+    const wavelengthBufferSpec = {
+        width   : this._resolution,
+        height  : this._resolution,
+        min     : gl.NEAREST,
+        mag     : gl.NEAREST,
+        format  : gl.RGBA,
+        iformat : gl.RGBA32F,
+        type    : gl.FLOAT,
+    };
+
     return [
         positionBufferSpec,
         directionBufferSpec,
         transmittanceBufferSpec,
         radianceBufferSpec,
+        wavelengthBufferSpec,
     ];
 }
 

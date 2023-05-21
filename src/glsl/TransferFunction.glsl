@@ -76,7 +76,7 @@ void main() {
 //    }
 
     float r = length((uPosition - vPosition) / uSize);
-    oColor = vec4(HSVtoRGB(vec3(vPosition.y, 1, 1)), 1) * exp(-r * r);
+    oColor = uColor * exp(-r * r);
 
 //    if (vPosition.y > 0.95) {
 //        oColor = vec4(0, 1.0, 0, 1);
