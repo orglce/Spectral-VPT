@@ -6,7 +6,8 @@ struct Photon {
     vec3 transmittance;
     vec3 radiance;
     float wavelength;
-    float wavelengthIntensity;
+    float wavelengthRadiance;
+    float wavelengthTransmittance;
     uint bounces;
     uint samples;
 };
